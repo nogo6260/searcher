@@ -1,0 +1,20 @@
+[package]
+name = "jito-searcher-client"
+version = "0.1.0"
+edition = "2021"
+description = "Wrapper around the generated gRPC. Adds auth and retry semantics."
+
+[dependencies]
+futures-util.workspace = true
+prost.workspace = true
+prost-types.workspace = true
+solana-client.workspace = true
+solana-sdk.workspace = true
+solana-transaction-status.workspace = true
+thiserror.workspace = true
+tonic.workspace = true
+jito-protos.workspace = true
+
+
+tracing = "0.1"
+tokio = { version = "1.0", features = ["full"] }

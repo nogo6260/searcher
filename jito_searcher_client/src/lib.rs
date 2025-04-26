@@ -13,7 +13,6 @@ use {
             searcher_service_client::SearcherServiceClient, SendBundleRequest, SendBundleResponse,
         },
     },
-    tracing::{info, warn},
     solana_client::nonblocking::rpc_client::RpcClient,
     solana_sdk::{
         commitment_config::CommitmentConfig,
@@ -31,6 +30,7 @@ use {
         transport::{self, Channel, Endpoint},
         Response, Status, Streaming,
     },
+    tracing::{info, warn},
 };
 
 pub mod token_authenticator;
@@ -56,6 +56,74 @@ pub enum BundleRejectionError {
 }
 
 pub type BlockEngineConnectionResult<T> = Result<T, BlockEngineConnectionError>;
+
+pub struct SearcherClient {
+    searcher_channel: Channel,
+    client_interceptor: ClientInterceptor,
+}
+
+impl SearcherClient {
+    pub async fn new(
+        block_engine_url: &str,
+        auth_keypair: &Arc<Keypair>,
+    ) -> BlockEngineConnectionResult<SearcherClient> {
+        let auth_channel = create_grpc_channel(block_engine_url).await?;
+        let client_interceptor = ClientInterceptor::new(
+            AuthServiceClient::new(auth_channel),
+            auth_keypair,
+            Role::Searcher,
+        )
+        .await?;
+
+        let searcher_channel = create_grpc_channel(block_engine_url).await?;
+        Ok(SearcherClient {
+            searcher_channel,
+            client_interceptor,
+        })
+    }
+
+    pub fn client(&self) -> SearcherServiceClient<InterceptedService<Channel, ClientInterceptor>> {
+        SearcherServiceClient::with_interceptor(
+            self.searcher_channel.clone(),
+            self.client_interceptor.clone(),
+        )
+    }
+
+    pub async fn send_bundle(
+        &self,
+        transactions: &[VersionedTransaction],
+    ) -> Result<Response<SendBundleResponse>, Status> {
+        let packets: Vec<_> = transactions
+            .iter()
+            .map(proto_packet_from_versioned_tx)
+            .collect();
+
+        self.client()
+            .send_bundle(SendBundleRequest {
+                bundle: Some(Bundle {
+                    header: None,
+                    packets,
+                }),
+            })
+            .await
+    }
+}
+
+pub async fn get_searcher_channel_and_interceptor(
+    block_engine_url: &str,
+    auth_keypair: &Arc<Keypair>,
+) -> BlockEngineConnectionResult<(Channel, ClientInterceptor)> {
+    let auth_channel = create_grpc_channel(block_engine_url).await?;
+    let client_interceptor = ClientInterceptor::new(
+        AuthServiceClient::new(auth_channel),
+        auth_keypair,
+        Role::Searcher,
+    )
+    .await?;
+
+    let searcher_channel = create_grpc_channel(block_engine_url).await?;
+    Ok((searcher_channel, client_interceptor))
+}
 
 pub async fn get_searcher_client_auth(
     block_engine_url: &str,

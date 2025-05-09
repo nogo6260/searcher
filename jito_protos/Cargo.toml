@@ -9,8 +9,9 @@ bincode.workspace = true
 bytes.workspace = true
 prost.workspace = true
 prost-types.workspace = true
-solana-perf.workspace = true
-solana-sdk.workspace = true
+solana-perf = { workspace = true, features = ["dev-context-only-utils"] }
+solana-packet.workspace = true
+solana-transaction.workspace = true
 tonic.workspace = true
 
 [build-dependencies]

@@ -14,10 +14,16 @@ tonic = { version = "0.11", features = [
 futures-util = "0.3.28"
 thiserror = "1.0.40"
 
-solana-perf = "=2.1"
-solana-client = "=2.1"
-solana-sdk = "=2.1"
-solana-transaction-status = "=2.1"
+solana-perf = "2.2"
+solana-client = "2.2"
+solana-sdk = "2.2"
+solana-keypair = "2.2"
+solana-signer = "2.2"
+solana-packet = "2.2"
+solana-signature = "2.2"
+solana-transaction = "2.2"
+solana-transaction-status = "2.2"
+solana-commitment-config = "2.2"
 
 jito-searcher-client = { path = "./jito_searcher_client", version = "0.1.0" }
 jito-protos = { path = "./jito_protos", version = "0.1.0" }

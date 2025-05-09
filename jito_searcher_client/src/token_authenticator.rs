@@ -5,7 +5,8 @@ use {
         GenerateAuthTokensRequest, RefreshAccessTokenRequest, Role, Token,
     },
     prost_types::Timestamp,
-    solana_sdk::signature::{Keypair, Signer},
+    solana_keypair::Keypair,
+    solana_signer::Signer,
     std::{
         sync::{Arc, RwLock},
         time::{Duration, SystemTime},

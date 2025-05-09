@@ -14,11 +14,10 @@ use {
         },
     },
     solana_client::nonblocking::rpc_client::RpcClient,
-    solana_sdk::{
-        commitment_config::CommitmentConfig,
-        signature::{Keypair, Signature},
-        transaction::VersionedTransaction,
-    },
+    solana_commitment_config::CommitmentConfig,
+    solana_keypair::Keypair,
+    solana_signature::Signature,
+    solana_transaction::versioned::VersionedTransaction,
     std::{
         sync::Arc,
         time::{Duration, Instant},

@@ -7,11 +7,9 @@ use {
         shared::Socket,
     },
     bincode::serialize,
+    solana_packet::{Meta, PacketFlags},
     solana_perf::packet::{Packet, PacketBatch, PACKET_DATA_SIZE},
-    solana_sdk::{
-        packet::{Meta, PacketFlags},
-        transaction::VersionedTransaction,
-    },
+    solana_transaction::versioned::VersionedTransaction,
     std::{
         cmp::min,
         net::{AddrParseError, IpAddr, Ipv4Addr, SocketAddr},
@@ -33,7 +31,7 @@ pub fn packet_to_proto_packet(p: &Packet) -> Option<ProtoPacket> {
                 forwarded: p.meta().forwarded(),
                 repair: p.meta().repair(),
                 simple_vote_tx: p.meta().is_simple_vote_tx(),
-                tracer_packet: p.meta().is_tracer_packet(),
+                tracer_packet: p.meta().is_perf_track_packet(),
                 from_staked_node: p.meta().is_from_staked_node(),
             }),
             sender_stake: 0,
@@ -70,7 +68,10 @@ pub fn proto_packet_to_packet(p: &ProtoPacket) -> Packet {
                 packet.meta_mut().flags.insert(PacketFlags::FORWARDED);
             }
             if flags.tracer_packet {
-                packet.meta_mut().flags.insert(PacketFlags::TRACER_PACKET);
+                packet
+                    .meta_mut()
+                    .flags
+                    .insert(PacketFlags::PERF_TRACK_PACKET);
             }
             if flags.repair {
                 packet.meta_mut().flags.insert(PacketFlags::REPAIR);
@@ -145,7 +146,7 @@ mod tests {
     use {
         crate::convert::{proto_packet_from_versioned_tx, versioned_tx_from_packet},
         solana_perf::test_tx::test_tx,
-        solana_sdk::transaction::VersionedTransaction,
+        solana_transaction::versioned::VersionedTransaction,
     };
 
     #[test]
